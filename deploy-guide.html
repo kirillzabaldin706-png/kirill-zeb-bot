@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Деплой бота 24/7 — Инструкция</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Geologica:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #2a2a3a;
+    --accent: #00e5ff;
+    --green: #00ff88;
+    --yellow: #ffd60a;
+    --orange: #ff6b35;
+    --purple: #a855f7;
+    --text: #e8e8f0;
+    --muted: #888899;
+    --mono: 'Space Mono', monospace;
+    --main: 'Geologica', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--main); line-height: 1.6; }
+
+  .hero {
+    background: linear-gradient(135deg, rgba(0,229,255,0.08), rgba(168,85,247,0.08));
+    border-bottom: 1px solid var(--border);
+    padding: 4rem 2rem 3rem;
+    text-align: center;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(0,255,136,0.1);
+    border: 1px solid rgba(0,255,136,0.3);
+    color: var(--green);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    padding: 0.3rem 1rem;
+    border-radius: 2rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.1em;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; letter-spacing: -2px; margin-bottom: 0.75rem; }
+  h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 1.1rem; font-weight: 300; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 3rem 2rem; }
+
+  /* Method cards */
+  .methods { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 3rem; }
+  @media(max-width:600px){ .methods { grid-template-columns: 1fr; } }
+
+  .method-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .method-card.recommended {
+    border-color: var(--green);
+    box-shadow: 0 0 30px rgba(0,255,136,0.08);
+  }
+  .method-card.recommended::before {
+    content: '★ РЕКОМЕНДУЕМ';
+    position: absolute;
+    top: 0; right: 0;
+    background: var(--green);
+    color: #000;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-bottom-left-radius: 8px;
+  }
+  .method-icon { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+  .method-card h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .method-card p { font-size: 0.85rem; color: var(--muted); font-weight: 300; margin-bottom: 1rem; }
+  .price-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+  }
+  .price-free { background: rgba(0,255,136,0.15); color: var(--green); }
+  .price-paid { background: rgba(255,107,53,0.15); color: var(--orange); }
+
+  /* Steps */
+  .steps-title {
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 0.5rem;
+  }
+  .steps-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; font-weight: 300; }
+
+  .step {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  .step::before {
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 48px;
+    bottom: -2rem;
+    width: 2px;
+    background: var(--border);
+  }
+  .step:last-child::before { display: none; }
+
+  .step-num {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .step-num.done { background: var(--green); }
+  .step-num.warn { background: var(--yellow); }
+
+  .step-body { flex: 1; padding-bottom: 1rem; }
+  .step-body h4 { font-size: 1.05rem; font-weight: 800; margin-bottom: 0.4rem; }
+  .step-body p { color: var(--muted); font-size: 0.88rem; font-weight: 300; line-height: 1.6; margin-bottom: 0.75rem; }
+  .step-body strong { color: var(--text); font-weight: 700; }
+
+  /* Code block */
+  .code-block {
+    background: #080810;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0.75rem 0;
+  }
+  .code-header {
+    background: var(--surface);
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .code-dots { display: flex; gap: 5px; }
+  .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+  .code-dots span:nth-child(1){ background:#ff5f57; }
+  .code-dots span:nth-child(2){ background:#febc2e; }
+  .code-dots span:nth-child(3){ background:#28c840; }
+  .code-label { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+  .copy-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.2rem 0.65rem;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .code-block pre {
+    padding: 1rem 1.2rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: #abb2bf;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .hl-green { color: #98c379; }
+  .hl-blue  { color: #61afef; }
+  .hl-gray  { color: #5c6370; font-style: italic; }
+  .hl-yellow{ color: #e5c07b; }
+  .hl-red   { color: #e06c75; }
+
+  /* Alert boxes */
+  .alert {
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin: 0.75rem 0;
+    font-size: 0.88rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    border: 1px solid;
+  }
+  .alert-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.05rem; }
+  .alert-info  { background: rgba(0,229,255,0.06); border-color: rgba(0,229,255,0.2); color: var(--text); }
+  .alert-warn  { background: rgba(255,214,10,0.06); border-color: rgba(255,214,10,0.2); color: var(--text); }
+  .alert-ok    { background: rgba(0,255,136,0.06); border-color: rgba(0,255,136,0.2); color: var(--text); }
+
+  /* File structure */
+  .file-tree {
+    background: #080810;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.2rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 2;
+    margin: 0.75rem 0;
+  }
+  .file-tree .folder { color: var(--yellow); }
+  .file-tree .file-py  { color: #61afef; }
+  .file-tree .file-txt { color: #98c379; }
+  .file-tree .file-new { color: var(--accent); }
+  .file-tree .comment  { color: #5c6370; }
+
+  /* Link button */
+  .link-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent);
+    color: #000;
+    padding: 0.65rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin: 0.5rem 0;
+  }
+  .link-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,229,255,0.3); }
+  .link-btn.purple { background: var(--purple); }
+  .link-btn.purple:hover { box-shadow: 0 8px 20px rgba(168,85,247,0.3); }
+
+  /* Summary */
+  .summary {
+    background: var(--card);
+    border: 1px solid var(--green);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    margin-top: 3rem;
+  }
+  .summary h3 { font-size: 1.5rem; font-weight: 900; margin-bottom: 0.75rem; }
+  .summary p { color: var(--muted); font-weight: 300; font-size: 0.95rem; }
+  .check-list { list-style: none; text-align: left; max-width: 400px; margin: 1.5rem auto; }
+  .check-list li { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem; font-size: 0.9rem; }
+  .check-list li::before { content: '✅'; flex-shrink: 0; }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">🚀 ДЕПЛОЙ БОТА 24/7</div>
+  <h1>Бот работает <span>всегда</span></h1>
+  <p>Пошаговая инструкция запуска @Kirill_ZEBbot на бесплатном сервере</p>
+</div>
+
+<div class="container">
+
+  <!-- METHOD CARDS -->
+  <div class="methods">
+    <div class="method-card recommended">
+      <span class="method-icon">🚂</span>
+      <h3>Railway</h3>
+      <p>Самый простой способ. Деплой за 5 минут. Бесплатный план — $5 кредитов в месяц.</p>
+      <span class="price-tag price-free">Бесплатно</span>
+    </div>
+    <div class="method-card">
+      <span class="method-icon">🌐</span>
+      <h3>VPS (Timeweb / Beget)</h3>
+      <p>Свой сервер — полный контроль. Сложнее настройка, но надёжнее.</p>
+      <span class="price-tag price-paid">~200-400₽/мес</span>
+    </div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps-title">🚂 Деплой на Railway — пошагово</div>
+  <p class="steps-sub">Следуй шагам по порядку. Займёт 10-15 минут.</p>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-num done">1</div>
+    <div class="step-body">
+      <h4>Скачай все 4 файла бота</h4>
+      <p>У тебя должны быть эти файлы из нашего чата:</p>
+      <div class="file-tree">
+        <span class="folder">📁 my-bot/</span><br>
+        &nbsp;&nbsp;<span class="file-py">├── python_bot_smart.py</span> <span class="comment"># сам бот</span><br>
+        &nbsp;&nbsp;<span class="file-new">├── requirements.txt</span> <span class="comment"># зависимости ← скачай ниже</span><br>
+        &nbsp;&nbsp;<span class="file-new">├── Procfile</span> <span class="comment"># команда запуска ← скачай ниже</span><br>
+        &nbsp;&nbsp;<span class="file-new">└── runtime.txt</span> <span class="comment"># версия Python ← скачай ниже</span>
+      </div>
+      <div class="alert alert-info">
+        <span class="alert-icon">📋</span>
+        <div><strong>requirements.txt</strong> — содержит одну строку: <code style="background:rgba(255,255,255,0.08);padding:0.1rem 0.4rem;border-radius:3px;font-family:monospace">aiogram==3.4.1</code></div>
+      </div>
+      <div class="alert alert-info">
+        <span class="alert-icon">📋</span>
+        <div><strong>Procfile</strong> — содержит: <code style="background:rgba(255,255,255,0.08);padding:0.1rem 0.4rem;border-radius:3px;font-family:monospace">worker: python python_bot_smart.py</code></div>
+      </div>
+      <div class="alert alert-info">
+        <span class="alert-icon">📋</span>
+        <div><strong>runtime.txt</strong> — содержит: <code style="background:rgba(255,255,255,0.08);padding:0.1rem 0.4rem;border-radius:3px;font-family:monospace">python-3.11.0</code></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <h4>Зарегистрируйся на GitHub</h4>
+      <p>Railway работает через GitHub. Нужен аккаунт.</p>
+      <a href="https://github.com" target="_blank" class="link-btn">→ Открыть GitHub.com</a>
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div>Если аккаунт уже есть — пропускай этот шаг.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <h4>Создай новый репозиторий на GitHub</h4>
+      <p>Репозиторий — это папка с твоим кодом на GitHub.</p>
+      <ol style="color:var(--muted);font-size:0.88rem;padding-left:1.2rem;line-height:2">
+        <li>Нажми кнопку <strong style="color:var(--text)">«New»</strong> или <strong style="color:var(--text)">«+»</strong> в правом верхнем углу</li>
+        <li>Название: <code style="background:rgba(255,255,255,0.08);padding:0.1rem 0.4rem;border-radius:3px;font-family:monospace">kirill-zeb-bot</code></li>
+        <li>Выбери <strong style="color:var(--text)">Private</strong> (приватный — токен не увидят чужие)</li>
+        <li>Нажми <strong style="color:var(--text)">Create repository</strong></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <h4>Загрузи файлы в репозиторий</h4>
+      <p>На странице репозитория нажми <strong>«uploading an existing file»</strong> и перетащи все 4 файла:</p>
+      <div class="file-tree">
+        🐍 python_bot_smart.py<br>
+        📄 requirements.txt<br>
+        📄 Procfile<br>
+        📄 runtime.txt
+      </div>
+      <p>Нажми <strong>Commit changes</strong> — файлы загружены!</p>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <h4>Зарегистрируйся на Railway</h4>
+      <a href="https://railway.app" target="_blank" class="link-btn purple">→ Открыть Railway.app</a>
+      <p style="margin-top:0.75rem">Нажми <strong>«Login with GitHub»</strong> — авторизуйся через GitHub аккаунт.</p>
+      <div class="alert alert-warn">
+        <span class="alert-icon">⚠️</span>
+        <div>Может потребоваться верификация через телефон или карту. Это бесплатно — просто для защиты от спама.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 6 -->
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <h4>Создай новый проект на Railway</h4>
+      <ol style="color:var(--muted);font-size:0.88rem;padding-left:1.2rem;line-height:2.2">
+        <li>Нажми <strong style="color:var(--text)">«New Project»</strong></li>
+        <li>Выбери <strong style="color:var(--text)">«Deploy from GitHub repo»</strong></li>
+        <li>Выбери репозиторий <code style="background:rgba(255,255,255,0.08);padding:0.1rem 0.4rem;border-radius:3px;font-family:monospace">kirill-zeb-bot</code></li>
+        <li>Нажми <strong style="color:var(--text)">«Deploy Now»</strong></li>
+      </ol>
+      <div class="alert alert-ok">
+        <span class="alert-icon">✅</span>
+        <div>Railway сам найдёт Procfile и запустит бота автоматически!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 7 -->
+  <div class="step">
+    <div class="step-num warn">7</div>
+    <div class="step-body">
+      <h4>Проверь что бот запустился</h4>
+      <p>В Railway открой вкладку <strong>«Deployments»</strong> → смотри логи. Должно появиться:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-label">Логи Railway</span>
+        </div>
+        <pre><span class="hl-green">INFO</span> | Bot запущен! Нажми Ctrl+C чтобы остановить.
+<span class="hl-blue">INFO</span> | Start polling...</pre>
+      </div>
+      <p>Если видишь это — <strong>бот работает 24/7!</strong> Открой Telegram и напиши <code style="background:rgba(255,255,255,0.08);padding:0.1rem 0.4rem;border-radius:3px;font-family:monospace">@Kirill_ZEBbot</code> → /start</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ALTERNATIVE: VPS -->
+  <div class="steps-title">🌐 Альтернатива: запуск на VPS</div>
+  <p class="steps-sub">Если хочешь свой сервер — вот команды для Ubuntu VPS.</p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <h4>Подключись к серверу и установи Python</h4>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-label">Terminal / SSH</span>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+        </div>
+        <pre><span class="hl-gray"># Подключение к серверу</span>
+ssh root@ВАШ_IP
+
+<span class="hl-gray"># Обновление и установка</span>
+apt update && apt upgrade -y
+apt install python3 python3-pip -y</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <h4>Загрузи файлы и установи зависимости</h4>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+        </div>
+        <pre><span class="hl-gray"># Создай папку</span>
+mkdir ~/bot && cd ~/bot
+
+<span class="hl-gray"># Загрузи файлы через scp (с твоего компьютера)</span>
+scp python_bot_smart.py root@ВАШ_IP:~/bot/
+scp requirements.txt   root@ВАШ_IP:~/bot/
+
+<span class="hl-gray"># Установи зависимости</span>
+pip3 install -r requirements.txt</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <h4>Запусти бота как фоновый сервис (systemd)</h4>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-label">Terminal</span>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+        </div>
+        <pre><span class="hl-gray"># Создай сервис-файл</span>
+nano /etc/systemd/system/kirill-bot.service</pre>
+      </div>
+      <p>Вставь в файл:</p>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-label">kirill-bot.service</span>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+        </div>
+        <pre>[Unit]
+Description=Kirill ZEB Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/bot
+ExecStart=/usr/bin/python3 /root/bot/python_bot_smart.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span class="code-label">Terminal — запуск</span>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+        </div>
+        <pre><span class="hl-gray"># Включить и запустить</span>
+systemctl daemon-reload
+systemctl enable kirill-bot
+systemctl start kirill-bot
+
+<span class="hl-gray"># Проверить статус</span>
+systemctl status kirill-bot
+
+<span class="hl-gray"># Смотреть логи</span>
+journalctl -u kirill-bot -f</pre>
+      </div>
+      <div class="alert alert-ok">
+        <span class="alert-icon">✅</span>
+        <div>Systemd автоматически перезапустит бота если он упадёт. Работает 24/7 даже после перезагрузки сервера.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary">
+    <h3>🎉 Бот работает 24/7!</h3>
+    <ul class="check-list">
+      <li>Бот запущен на сервере</li>
+      <li>Отвечает автоматически без твоего участия</li>
+      <li>Знает HTML, CSS, JavaScript</li>
+      <li>Перезапускается при сбоях</li>
+      <li>Сайт подключён к боту @Kirill_ZEBbot</li>
+    </ul>
+    <p>Открой Telegram и напиши боту <strong>@Kirill_ZEBbot</strong> → <strong>/start</strong></p>
+  </div>
+
+</div>
+
+<script>
+function copyCode(btn) {
+  const code = btn.closest('.code-block').querySelector('pre').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = 'Скопировано!';
+    btn.style.color = '#00ff88';
+    setTimeout(() => { btn.textContent = 'Копировать'; btn.style.color = ''; }, 2000);
+  });
+}
+</script>
+</body>
+</html>
