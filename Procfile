@@ -1,1 +1,1 @@
-worker: python python_bot_smart.py
+worker: python3 python_bot_smart.py
